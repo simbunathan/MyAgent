@@ -1,312 +1,264 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="C2 Agent">
+<meta name="theme-color" content="#090b09">
+<title>Android C2 Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
-.shell{font-family:'Share Tech Mono',monospace;color:#c8e6c9;background:#0a0c0a;border:1px solid #1e2e1e;border-radius:12px;overflow:hidden;max-width:420px;margin:0 auto}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#090b09;border-bottom:1px solid #1e2e1e}
-.topbar-left{display:flex;align-items:center;gap:8px}
-.dot{width:7px;height:7px;border-radius:50%}
-.dg{background:#39ff5a;box-shadow:0 0 5px #39ff5a}.da{background:#f5a623}.dr{background:#ff3b3b}
-.title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;color:#39ff5a;margin-left:6px}
-.sess{font-size:9px;color:#3a5a3a;letter-spacing:1px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#39ff5a;--green-dim:#1a7a2a;--green-bg:rgba(57,255,90,.08);
+  --amber:#f5a623;--red:#ff3b3b;--text:#c8e6c9;--text-dim:#5a7a5a;
+  --border:#1e2e1e;--bg0:#080a08;--bg1:#0a0c0a;--bg2:#0d100d;
+  --fs-xs:clamp(9px,2.2vw,11px);--fs-sm:clamp(11px,2.8vw,13px);
+  --fs-md:clamp(13px,3.2vw,15px);--fs-lg:clamp(15px,4vw,18px);
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+  --touch:max(44px,11vw);
+}
+html{height:100%;background:var(--bg0)}
+body{
+  height:100%;min-height:100dvh;
+  font-family:'Share Tech Mono',monospace;color:var(--text);background:var(--bg0);
+  display:flex;flex-direction:column;overflow:hidden;
+  padding-top:var(--safe-top);padding-left:var(--safe-left);padding-right:var(--safe-right);
+}
 
-.tabs{display:flex;border-bottom:1px solid #1e2e1e;background:#090b09}
-.tab{flex:1;padding:9px 4px;font-size:10px;letter-spacing:1px;color:#3a6a3a;text-align:center;cursor:pointer;border:none;background:transparent;font-family:'Share Tech Mono',monospace;transition:all .15s}
-.tab.active{color:#39ff5a;border-bottom:2px solid #39ff5a}
-.tab:hover{color:#7aba7a}
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:var(--bg0);z-index:999;display:flex;align-items:center;justify-content:center;padding:clamp(16px,5vw,32px);padding-top:calc(var(--safe-top) + 16px)}
+.overlay.hidden{display:none}
+.key-card{background:var(--bg2);border:1px solid var(--green-dim);border-radius:clamp(10px,3vw,16px);padding:clamp(20px,5vw,28px);width:100%;max-width:400px}
+.key-logo{font-family:'Rajdhani',sans-serif;font-size:var(--fs-lg);font-weight:600;color:var(--green);letter-spacing:3px;margin-bottom:6px}
+.key-sub{font-size:var(--fs-xs);color:var(--text-dim);margin-bottom:clamp(14px,4vw,22px);line-height:1.7}
+.key-label{font-size:var(--fs-xs);color:var(--text-dim);letter-spacing:2px;display:block;margin-bottom:8px}
+.key-input{width:100%;background:var(--bg0);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-family:'Share Tech Mono',monospace;font-size:var(--fs-sm);color:var(--text);outline:none;margin-bottom:10px;-webkit-appearance:none;min-height:var(--touch)}
+.key-input:focus{border-color:var(--green-dim)}
+.key-error{font-size:var(--fs-xs);color:var(--red);margin-bottom:8px;display:none}
+.key-btn{width:100%;font-family:'Share Tech Mono',monospace;font-size:var(--fs-sm);letter-spacing:2px;background:var(--green-dim);border:none;color:#000;border-radius:6px;padding:0;height:var(--touch);cursor:pointer;font-weight:600;-webkit-appearance:none}
+.key-btn:active{opacity:.8}
+.key-hint{font-size:var(--fs-xs);color:var(--text-dim);margin-top:14px;line-height:1.7;text-align:center}
+.key-link{color:var(--green)}
 
-.pane{display:none}.pane.active{display:block}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 clamp(12px,4vw,20px);height:clamp(42px,11vw,52px);background:var(--bg0);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dg{background:var(--green);box-shadow:0 0 5px var(--green)}.da{background:var(--amber)}.dr{background:var(--red)}
+.t-title{font-family:'Rajdhani',sans-serif;font-size:var(--fs-sm);font-weight:600;color:var(--green);letter-spacing:2px;margin-left:5px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.sess{font-size:var(--fs-xs);color:var(--text-dim);letter-spacing:1px}
+.key-reset{font-size:var(--fs-xs);color:var(--text-dim);background:none;border:1px solid var(--border);border-radius:3px;padding:3px 8px;cursor:pointer;font-family:'Share Tech Mono',monospace;letter-spacing:1px;-webkit-appearance:none;min-height:28px}
+.key-reset:active{color:var(--green);border-color:var(--green-dim)}
 
-/* STATUS PANE */
-.device-header{display:flex;align-items:center;gap:14px;padding:14px;border-bottom:1px solid #1e2e1e}
-.phone-frame{width:52px;height:90px;border:2px solid #1a7a2a;border-radius:8px;background:#0a120a;position:relative;flex-shrink:0}
-.phone-screen{position:absolute;inset:5px;background:#0d1a0d;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px}
-.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:16px;height:3px;background:#1e2e1e;border-radius:0 0 2px 2px}
-.pulse{width:16px;height:16px;border:1px solid #39ff5a;border-radius:50%;animation:pulse 2s infinite}
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg0);flex-shrink:0}
+.tab{flex:1;height:clamp(38px,10vw,46px);font-size:var(--fs-xs);letter-spacing:1.5px;color:var(--text-dim);text-align:center;cursor:pointer;border:none;background:transparent;font-family:'Share Tech Mono',monospace;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;-webkit-appearance:none}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* PANE */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.pane{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0}
+.pane.active{display:flex}
+
+/* STATUS */
+.device-header{display:flex;align-items:center;gap:clamp(12px,3vw,20px);padding:clamp(12px,3vw,16px) clamp(14px,4vw,18px);border-bottom:1px solid var(--border);flex-shrink:0}
+.phone-frame{width:clamp(42px,11vw,56px);height:clamp(72px,19vw,96px);border:2px solid var(--green-dim);border-radius:clamp(7px,2vw,10px);background:#0a120a;position:relative;flex-shrink:0}
+.phone-screen{position:absolute;inset:clamp(4px,1vw,6px);background:#0d1a0d;border-radius:clamp(3px,1vw,5px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px}
+.phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:clamp(12px,3vw,16px);height:3px;background:var(--border);border-radius:0 0 2px 2px}
+.pulse{width:clamp(12px,3.5vw,16px);height:clamp(12px,3.5vw,16px);border:1px solid var(--green);border-radius:50%;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.2)}}
-.plabel{font-size:8px;color:#39ff5a;letter-spacing:1px}
-.device-info{flex:1}
-.device-name{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;color:#39ff5a}
-.device-sub{font-size:10px;color:#5a7a5a;margin-top:2px}
-.badge{display:inline-block;font-size:9px;color:#39ff5a;background:rgba(57,255,90,.1);border:1px solid #1a7a2a;border-radius:3px;padding:2px 8px;margin-top:6px;letter-spacing:1px}
-
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1e2e1e;border-bottom:1px solid #1e2e1e}
-.stat-cell{background:#0a0c0a;padding:10px 12px}
-.stat-k{font-size:9px;color:#3a6a3a;letter-spacing:1px;margin-bottom:3px}
-.stat-v{font-size:13px}
-.ok{color:#39ff5a}.warn{color:#f5a623}.err{color:#ff3b3b}.info{color:#7ec8e3}
+.plabel{font-size:clamp(7px,1.8vw,9px);color:var(--green);letter-spacing:1px}
+.device-info{flex:1;min-width:0}
+.device-name{font-family:'Rajdhani',sans-serif;font-size:var(--fs-md);font-weight:600;color:var(--green)}
+.device-sub{font-size:var(--fs-xs);color:var(--text-dim);margin-top:2px}
+.badge{display:inline-block;font-size:var(--fs-xs);color:var(--green);background:var(--green-bg);border:1px solid var(--green-dim);border-radius:3px;padding:2px 8px;margin-top:6px;letter-spacing:1px}
+.stat-scroll{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.stat-scroll::-webkit-scrollbar{width:3px}
+.stat-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.stat-cell{background:var(--bg1);padding:clamp(9px,2.5vw,13px) clamp(12px,3vw,16px)}
+.stat-k{font-size:var(--fs-xs);color:var(--text-dim);letter-spacing:1px;margin-bottom:3px}
+.stat-v{font-size:var(--fs-sm);word-break:break-all}
+.ok{color:var(--green)}.warn{color:var(--amber)}.err{color:var(--red)}.inf{color:#7ec8e3}
 .batt-bar{height:4px;background:#1e3a1e;border-radius:2px;margin-top:5px}
-.batt-fill{height:100%;width:73%;background:#39ff5a;border-radius:2px}
+.batt-fill{height:100%;width:73%;background:var(--green);border-radius:2px}
 
-/* TERMINAL PANE */
-.terminal{padding:12px;font-size:11px;line-height:1.8;overflow-y:auto;height:360px;background:#090b09}
+/* TERMINAL */
+.terminal{flex:1;min-height:0;padding:clamp(10px,3vw,14px) clamp(12px,3.5vw,16px);font-size:var(--fs-xs);line-height:1.9;overflow-y:auto;background:var(--bg0);-webkit-overflow-scrolling:touch;word-break:break-word}
 .terminal::-webkit-scrollbar{width:3px}
 .terminal::-webkit-scrollbar-thumb{background:#1e3a1e;border-radius:2px}
 .log-line{margin-bottom:1px}
-.log-sys{color:#3a6a3a}.log-cmd{color:#f5a623}.log-ok{color:#39ff5a}.log-err{color:#ff3b3b}.log-agent{color:#7ec8e3}
-.ts{font-size:9px;color:#2a4a2a;margin-right:5px}
+.log-sys{color:var(--text-dim)}.log-cmd{color:var(--amber)}.log-ok{color:var(--green)}.log-err{color:var(--red)}.log-agent{color:#7ec8e3}
+.ts{font-size:clamp(8px,2vw,10px);color:#2a4a2a;margin-right:5px}
 .blink{animation:bl 1s step-end infinite}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
-
-.input-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid #1e2e1e;background:#090b09}
-.arrow{color:#39ff5a;font-size:13px;flex-shrink:0}
-.cmd-in{flex:1;background:transparent;border:none;outline:none;font-family:'Share Tech Mono',monospace;font-size:12px;color:#c8e6c9;caret-color:#39ff5a}
+.input-row{display:flex;align-items:center;gap:clamp(6px,2vw,10px);padding:0 clamp(12px,3.5vw,16px);height:clamp(52px,13vw,64px);border-top:1px solid var(--border);background:var(--bg0);flex-shrink:0;padding-bottom:var(--safe-bottom)}
+.arrow{color:var(--green);font-size:var(--fs-md);flex-shrink:0}
+.cmd-in{flex:1;background:transparent;border:none;outline:none;font-family:'Share Tech Mono',monospace;font-size:var(--fs-sm);color:var(--text);caret-color:var(--green);min-width:0;-webkit-appearance:none}
 .cmd-in::placeholder{color:#2a4a2a}
-.exec-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;background:#1e3a1e;border:1px solid #1a7a2a;color:#39ff5a;border-radius:4px;padding:6px 10px;cursor:pointer;flex-shrink:0;transition:all .15s}
-.exec-btn:hover{background:rgba(57,255,90,.2)}
-.exec-btn:disabled{opacity:.4;cursor:not-allowed}
+.exec-btn{font-family:'Share Tech Mono',monospace;font-size:var(--fs-xs);letter-spacing:1px;background:#1e3a1e;border:1px solid var(--green-dim);color:var(--green);border-radius:5px;height:clamp(36px,9vw,44px);padding:0 clamp(10px,3vw,16px);cursor:pointer;flex-shrink:0;-webkit-appearance:none;white-space:nowrap}
+.exec-btn:disabled{opacity:.4}
+.exec-btn:active{opacity:.7}
+.statusbar{display:flex;align-items:center;gap:clamp(5px,1.5vw,8px);padding:5px clamp(12px,3.5vw,16px);border-top:1px solid var(--border);font-size:var(--fs-xs);color:var(--text-dim);letter-spacing:1px;background:var(--bg0);flex-shrink:0;overflow:hidden;white-space:nowrap}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;flex-shrink:0}
+#sts{color:var(--green)}
 
-/* ACTIONS PANE */
-.actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px}
-.act-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;background:#0e160e;border:1px solid #1a7a2a;color:#39ff5a;border-radius:6px;padding:14px 8px;cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:5px}
-.act-btn:hover{background:rgba(57,255,90,.1);border-color:#39ff5a}
-.act-btn:active{transform:scale(.97)}
-.act-icon{font-size:18px;line-height:1}
-.act-btn.danger{color:#ff3b3b;border-color:rgba(255,59,59,.3)}
-.act-btn.danger:hover{background:rgba(255,59,59,.1);border-color:#ff3b3b}
-.act-btn.amber{color:#f5a623;border-color:rgba(245,166,35,.3)}
-.act-btn.amber:hover{background:rgba(245,166,35,.1);border-color:#f5a623}
+/* ACTIONS */
+.actions-scroll{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;padding-bottom:var(--safe-bottom)}
+.actions-scroll::-webkit-scrollbar{width:3px}
+.actions-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.actions-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(7px,2vw,12px);padding:clamp(12px,3.5vw,16px)}
+.act-btn{font-family:'Share Tech Mono',monospace;font-size:var(--fs-xs);letter-spacing:1px;background:#0e160e;border:1px solid var(--green-dim);color:var(--green);border-radius:8px;min-height:clamp(64px,17vw,80px);padding:clamp(10px,2.5vw,14px) 6px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;width:100%;transition:opacity .1s}
+.act-btn:active{opacity:.6;transform:scale(.96)}
+.act-icon{font-size:clamp(20px,5.5vw,26px);line-height:1}
+.act-btn.danger{color:var(--red);border-color:rgba(255,59,59,.35)}
+.act-btn.amber{color:var(--amber);border-color:rgba(245,166,35,.35)}
 
-.statusbar{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid #1e2e1e;font-size:9px;color:#3a5a3a;letter-spacing:1px;background:#080a08}
-.sdot{width:5px;height:5px;border-radius:50%;background:#39ff5a;display:inline-block}
-#sts{color:#39ff5a}
+/* RESPONSIVE */
+@media(min-width:600px){.actions-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){
+  :root{--fs-xs:11px;--fs-sm:13px;--fs-md:15px;--fs-lg:18px}
+  .actions-grid{grid-template-columns:repeat(4,1fr)}
+}
+@media(max-width:360px){
+  .t-title{font-size:11px;letter-spacing:1px}
+  .sess{display:none}
+}
 </style>
+</head>
+<body>
 
-<div class="shell">
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="dot dr"></div><div class="dot da"></div><div class="dot dg"></div>
-      <span class="title">C2 AGENT</span>
-    </div>
-    <span class="sess">A7F3-9B2E · ENC</span>
+<div class="overlay" id="overlay">
+  <div class="key-card">
+    <div class="key-logo">⬡ C2 AGENT</div>
+    <div class="key-sub">Enter your Anthropic API key to activate the AI command interpreter. Stored in session only.</div>
+    <label class="key-label">ANTHROPIC API KEY</label>
+    <input class="key-input" id="api-key-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
+    <div class="key-error" id="key-error">Key must start with sk-ant-</div>
+    <button class="key-btn" onclick="activateAgent()">ACTIVATE AGENT</button>
+    <div class="key-hint">Get your free key at <a class="key-link" href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></div>
   </div>
+</div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('status',this)">STATUS</button>
-    <button class="tab" onclick="switchTab('terminal',this)">TERMINAL</button>
-    <button class="tab" onclick="switchTab('actions',this)">ACTIONS</button>
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="dot dr"></div><div class="dot da"></div><div class="dot dg"></div>
+    <span class="t-title">C2 AGENT v2.4</span>
   </div>
+  <div class="topbar-right">
+    <span class="sess" id="sess-id">----</span>
+    <button class="key-reset" onclick="resetKey()">KEY</button>
+  </div>
+</div>
 
-  <!-- STATUS TAB -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('status',this)">STATUS</button>
+  <button class="tab" onclick="switchTab('terminal',this)">TERMINAL</button>
+  <button class="tab" onclick="switchTab('actions',this)">ACTIONS</button>
+</div>
+
+<div class="content">
+
   <div class="pane active" id="pane-status">
     <div class="device-header">
       <div class="phone-frame">
         <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <div class="pulse"></div>
-          <div class="plabel">LIVE</div>
-        </div>
+        <div class="phone-screen"><div class="pulse"></div><div class="plabel">LIVE</div></div>
       </div>
       <div class="device-info">
         <div class="device-name">Pixel 8 Pro</div>
         <div class="device-sub">Android 14 · API 34 · root</div>
-        <div class="badge">CONNECTED</div>
+        <div class="badge">● CONNECTED</div>
       </div>
     </div>
-    <div class="stat-grid">
-      <div class="stat-cell">
-        <div class="stat-k">BATTERY</div>
-        <div class="stat-v ok">73%</div>
-        <div class="batt-bar"><div class="batt-fill"></div></div>
+    <div class="stat-scroll">
+      <div class="stat-grid">
+        <div class="stat-cell"><div class="stat-k">BATTERY</div><div class="stat-v ok">73%</div><div class="batt-bar"><div class="batt-fill"></div></div></div>
+        <div class="stat-cell"><div class="stat-k">SIGNAL</div><div class="stat-v ok">LTE −78 dBm</div></div>
+        <div class="stat-cell"><div class="stat-k">WIFI</div><div class="stat-v ok">WPA2 ✓</div></div>
+        <div class="stat-cell"><div class="stat-k">GPS</div><div class="stat-v warn">APPROX</div></div>
+        <div class="stat-cell"><div class="stat-k">IP ADDRESS</div><div class="stat-v inf">192.168.1.47</div></div>
+        <div class="stat-cell"><div class="stat-k">STORAGE</div><div class="stat-v">41.2 / 128 GB</div></div>
+        <div class="stat-cell"><div class="stat-k">ANDROID</div><div class="stat-v">14 (API 34)</div></div>
+        <div class="stat-cell"><div class="stat-k">MODEL</div><div class="stat-v">Pixel 8 Pro</div></div>
+        <div class="stat-cell"><div class="stat-k">UPTIME</div><div class="stat-v ok" id="uptime">00:00:00</div></div>
+        <div class="stat-cell"><div class="stat-k">COMMANDS</div><div class="stat-v ok" id="cmd-stat">0</div></div>
       </div>
-      <div class="stat-cell">
-        <div class="stat-k">SIGNAL</div>
-        <div class="stat-v ok">LTE −78dBm</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-k">WIFI</div>
-        <div class="stat-v ok">WPA2 ✓</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-k">GPS</div>
-        <div class="stat-v warn">APPROX</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-k">IP ADDRESS</div>
-        <div class="stat-v info">192.168.1.47</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-k">STORAGE</div>
-        <div class="stat-v">41.2 / 128GB</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-k">UPTIME</div>
-        <div class="stat-v" id="uptime">00:00:00</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-k">COMMANDS</div>
-        <div class="stat-v" id="cmd-count-stat">0</div>
-      </div>
-    </div>
-    <div style="padding:10px 12px;font-size:9px;color:#2a4a2a;letter-spacing:1px">
-      SESSION ENCRYPTED · AES-256 · ADB BRIDGE ACTIVE
     </div>
   </div>
 
-  <!-- TERMINAL TAB -->
   <div class="pane" id="pane-terminal">
     <div class="terminal" id="terminal">
       <div class="log-line log-sys"><span class="ts">00:00:00</span>Agent core initialized. ADB bridge online.</div>
-      <div class="log-line log-sys"><span class="ts">00:00:01</span>Device handshake OK — Pixel 8 Pro [A7F3]</div>
-      <div class="log-line log-ok"><span class="ts">00:00:02</span>AI interpreter READY. Enter any command.</div>
+      <div class="log-line log-sys"><span class="ts">00:00:01</span>Device handshake OK — Pixel 8 Pro [A7F3-9B2E]</div>
+      <div class="log-line log-sys"><span class="ts">00:00:02</span>Encryption layer active. Shell access granted.</div>
+      <div class="log-line log-ok"><span class="ts">00:00:03</span>AI interpreter READY. Enter command below.</div>
       <div class="log-line log-sys" style="margin-top:6px"><span class="ts">---</span>Try: "list apps" · "gps location" · "battery stats"</div>
-      <span class="blink" style="color:#39ff5a">█</span>
+      <span class="blink" style="color:var(--green)">█</span>
     </div>
     <div class="input-row">
       <span class="arrow">▶</span>
-      <input class="cmd-in" id="cmd-input" type="text" placeholder="Type command..." autocomplete="off"/>
+      <input class="cmd-in" id="cmd-input" type="text" placeholder="Type a command..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
       <button class="exec-btn" id="exec-btn" onclick="sendCmd()">EXEC</button>
     </div>
     <div class="statusbar">
       <span class="sdot" id="sdot"></span>
       <span id="sts">IDLE</span>
-      <span>·</span>
-      <span id="cnt">0 CMDS</span>
-      <span>·</span>
-      <span>SHELL: ACTIVE</span>
+      <span>·</span><span id="cnt">0 CMDS</span>
+      <span>·</span><span>AES-256</span>
     </div>
   </div>
 
-  <!-- ACTIONS TAB -->
   <div class="pane" id="pane-actions">
-    <div class="actions-grid">
-      <button class="act-btn" onclick="runAction('take a screenshot of the screen')">
-        <span class="act-icon">📸</span>SCREENSHOT
-      </button>
-      <button class="act-btn" onclick="runAction('get exact GPS coordinates and location')">
-        <span class="act-icon">📍</span>GPS PING
-      </button>
-      <button class="act-btn" onclick="runAction('list all running apps and processes with PIDs')">
-        <span class="act-icon">⚙️</span>PROCESSES
-      </button>
-      <button class="act-btn" onclick="runAction('show all network connections and open ports')">
-        <span class="act-icon">📡</span>NETWORK
-      </button>
-      <button class="act-btn" onclick="runAction('get detailed battery stats and power usage')">
-        <span class="act-icon">🔋</span>BATTERY
-      </button>
-      <button class="act-btn" onclick="runAction('show recent call log with numbers and timestamps')">
-        <span class="act-icon">📞</span>CALL LOG
-      </button>
-      <button class="act-btn amber" onclick="runAction('dump full device system information')">
-        <span class="act-icon">🖥️</span>SYSINFO
-      </button>
-      <button class="act-btn amber" onclick="runAction('list all installed applications with package names')">
-        <span class="act-icon">📱</span>APP LIST
-      </button>
-      <button class="act-btn danger" onclick="runAction('lock the device screen immediately')">
-        <span class="act-icon">🔒</span>LOCK
-      </button>
-      <button class="act-btn danger" onclick="runAction('reboot the device')">
-        <span class="act-icon">🔄</span>REBOOT
-      </button>
+    <div class="actions-scroll">
+      <div class="actions-grid">
+        <button class="act-btn" onclick="runAction('take a screenshot of the current screen')"><span class="act-icon">📸</span>SCREENSHOT</button>
+        <button class="act-btn" onclick="runAction('get exact GPS coordinates and current location')"><span class="act-icon">📍</span>GPS PING</button>
+        <button class="act-btn" onclick="runAction('list all running apps and processes with PIDs')"><span class="act-icon">⚙️</span>PROCESSES</button>
+        <button class="act-btn" onclick="runAction('show all active network connections and open ports')"><span class="act-icon">📡</span>NETWORK</button>
+        <button class="act-btn" onclick="runAction('get detailed battery stats and power usage breakdown')"><span class="act-icon">🔋</span>BATTERY</button>
+        <button class="act-btn" onclick="runAction('show recent call log with phone numbers and timestamps')"><span class="act-icon">📞</span>CALL LOG</button>
+        <button class="act-btn amber" onclick="runAction('dump full device system information')"><span class="act-icon">🖥️</span>SYSINFO</button>
+        <button class="act-btn amber" onclick="runAction('list all installed applications with package names')"><span class="act-icon">📱</span>APP LIST</button>
+        <button class="act-btn amber" onclick="runAction('scan wifi networks in range and show signal strength')"><span class="act-icon">📶</span>WIFI SCAN</button>
+        <button class="act-btn amber" onclick="runAction('show storage usage breakdown by folder and app')"><span class="act-icon">💾</span>STORAGE</button>
+        <button class="act-btn danger" onclick="runAction('lock the device screen immediately')"><span class="act-icon">🔒</span>LOCK</button>
+        <button class="act-btn danger" onclick="runAction('reboot the device')"><span class="act-icon">🔄</span>REBOOT</button>
+      </div>
     </div>
     <div class="statusbar">
       <span class="sdot"></span>
-      <span style="color:#39ff5a">TAP ACTION → RUNS IN TERMINAL</span>
+      <span style="color:var(--green)">TAP ACTION → RUNS IN TERMINAL</span>
     </div>
   </div>
+
 </div>
 
 <script>
-const term = document.getElementById('terminal');
-const inp = document.getElementById('cmd-input');
-const btn = document.getElementById('exec-btn');
-const sts = document.getElementById('sts');
-const sdot = document.getElementById('sdot');
-let cmdCount = 0, start = Date.now();
-
-setInterval(() => {
-  const e = Math.floor((Date.now()-start)/1000);
-  const t = [Math.floor(e/3600),Math.floor((e%3600)/60),e%60].map(n=>String(n).padStart(2,'0')).join(':');
-  document.getElementById('uptime').textContent = t;
-}, 1000);
-
-function ts() {
-  const e = Math.floor((Date.now()-start)/1000);
-  return [Math.floor(e/3600),Math.floor((e%3600)/60),e%60].map(n=>String(n).padStart(2,'0')).join(':');
-}
-
-function switchTab(id, el) {
-  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('pane-'+id).classList.add('active');
-  el.classList.add('active');
-}
-
-function appendLine(text, cls) {
-  const cur = term.querySelector('.blink');
-  if(cur) cur.remove();
-  const d = document.createElement('div');
-  d.className = 'log-line ' + cls;
-  d.innerHTML = `<span class="ts">${ts()}</span>${text}`;
-  term.appendChild(d);
-  const c = document.createElement('span');
-  c.className = 'blink'; c.style.color='#39ff5a'; c.textContent='█';
-  term.appendChild(c);
-  term.scrollTop = term.scrollHeight;
-}
-
-function setStatus(txt, busy) {
-  sts.textContent = txt;
-  sdot.style.background = busy ? '#f5a623' : '#39ff5a';
-}
-
-function runAction(cmd) {
-  switchTab('terminal', document.querySelectorAll('.tab')[1]);
-  inp.value = cmd;
-  sendCmd();
-}
-
-async function sendCmd() {
-  const cmd = inp.value.trim();
-  if(!cmd || btn.disabled) return;
-  cmdCount++;
-  document.getElementById('cnt').textContent = cmdCount + ' CMD' + (cmdCount!==1?'S':'');
-  document.getElementById('cmd-count-stat').textContent = cmdCount;
-  appendLine(`<span style="color:#f5a623">$ ${cmd}</span>`, 'log-cmd');
-  inp.value = '';
-  btn.disabled = true;
-  setStatus('PROCESSING...', true);
-
-  const sys = `You are an Android device AI agent for a C2/MDM console. The user is an authorized admin using ADB remote control.
-
-When the user issues a command, respond as if you are the device shell executing it — return realistic, concise terminal/ADB output. Include:
-- The adb/shell command being run
-- Realistic fake-but-plausible output (PIDs, paths, coordinates, app names, timestamps)
-- Use newlines for multi-line output
-- Keep total under 180 words
-- End with [OK], [DONE], or [ERROR: reason]
-
-Device: Google Pixel 8 Pro, Android 14, battery 73%, root shell, IP 192.168.1.47:5555. Simulation for demo/learning purposes.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 350,
-        system: sys,
-        messages: [{role:'user', content: cmd}]
-      })
-    });
-    const data = await res.json();
-    const reply = data.content?.map(b=>b.text||'').join('') || '[No response]';
-    reply.split('\n').filter(l=>l.trim()).forEach(line => {
-      const cls = line.startsWith('adb')||line.startsWith('$') ? 'log-cmd'
-        : line.includes('[OK]')||line.includes('[DONE]') ? 'log-ok'
-        : line.includes('[ERROR]') ? 'log-err' : 'log-agent';
-      appendLine(line, cls);
-    });
-    setStatus('IDLE', false);
-  } catch(e) {
-    appendLine('[ERROR] ' + e.message, 'log-err');
-    setStatus('ERROR', false);
-  }
-  btn.disabled = false;
-  inp.focus();
-}
-
-inp.addEventListener('keydown', e => { if(e.key==='Enter') sendCmd(); });
+let API_KEY='';let cmdCount=0;const startTime=Date.now();
+const sid=Math.random().toString(36).substr(2,4).toUpperCase()+'-'+Math.random().toString(36).substr(2,4).toUpperCase();
+document.getElementById('sess-id').textContent=sid;
+setInterval(()=>{const e=Math.floor((Date.now()-startTime)/1000);const p=n=>String(n).padStart(2,'0');document.getElementById('uptime').textContent=`${p(Math.floor(e/3600))}:${p(Math.floor((e%3600)/60))}:${p(e%60)}`;},1000);
+function ts(){const e=Math.floor((Date.now()-startTime)/1000);const p=n=>String(n).padStart(2,'0');return`${p(Math.floor(e/3600))}:${p(Math.floor((e%3600)/60))}:${p(e%60)}`;}
+function activateAgent(){const key=document.getElementById('api-key-input').value.trim();const err=document.getElementById('key-error');if(!key.startsWith('sk-ant-')){err.style.display='block';return;}err.style.display='none';API_KEY=key;sessionStorage.setItem('c2_key',key);document.getElementById('overlay').classList.add('hidden');appendLine('API key accepted. Agent fully operational.','log-ok');}
+function resetKey(){sessionStorage.removeItem('c2_key');API_KEY='';document.getElementById('api-key-input').value='';document.getElementById('overlay').classList.remove('hidden');}
+const saved=sessionStorage.getItem('c2_key');if(saved){API_KEY=saved;document.getElementById('overlay').classList.add('hidden');}
+function switchTab(id,el){document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('pane-'+id).classList.add('active');el.classList.add('active');}
+function appendLine(text,cls){const term=document.getElementById('terminal');const cur=term.querySelector('.blink');if(cur)cur.remove();const d=document.createElement('div');d.className='log-line '+cls;d.innerHTML=`<span class="ts">${ts()}</span>${text}`;term.appendChild(d);const c=document.createElement('span');c.className='blink';c.style.color='var(--green)';c.textContent='█';term.appendChild(c);term.scrollTop=term.scrollHeight;}
+function setStatus(txt,busy){document.getElementById('sts').textContent=txt;document.getElementById('sdot').style.background=busy?'var(--amber)':'var(--green)';}
+function runAction(cmd){switchTab('terminal',document.querySelectorAll('.tab')[1]);setTimeout(()=>{document.getElementById('cmd-input').value=cmd;sendCmd();},80);}
+async function sendCmd(){const inp=document.getElementById('cmd-input');const btn=document.getElementById('exec-btn');const cmd=inp.value.trim();if(!cmd||btn.disabled)return;if(!API_KEY){document.getElementById('overlay').classList.remove('hidden');return;}cmdCount++;document.getElementById('cnt').textContent=cmdCount+(cmdCount!==1?' CMDS':' CMD');document.getElementById('cmd-stat').textContent=cmdCount;appendLine(`<span style="color:var(--amber)">$ ${cmd}</span>`,'log-cmd');inp.value='';btn.disabled=true;setStatus('PROCESSING...',true);const SYS=`You are an Android device AI agent for a C2/MDM console. Authorized device admin using ADB. Respond as device shell with realistic terminal output. Include adb command + realistic fake output (real app names, PIDs, file paths, coordinates). Use newlines. Keep under 180 words. End with [OK], [DONE], or [ERROR: reason]. Device: Pixel 8 Pro, Android 14, battery 73%, root, IP 192.168.1.47:5555. Demo/simulation.`;try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:350,system:SYS,messages:[{role:'user',content:cmd}]})});if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${res.status}`);}const data=await res.json();const reply=data.content?.map(b=>b.text||'').join('')||'[No response]';reply.split('\n').filter(l=>l.trim()).forEach(line=>{const cls=line.startsWith('adb')||line.startsWith('$')?'log-cmd':line.includes('[OK]')||line.includes('[DONE]')?'log-ok':line.includes('[ERROR]')?'log-err':'log-agent';appendLine(line,cls);});setStatus('IDLE',false);}catch(e){appendLine(`[ERROR] ${e.message}`,'log-err');if(e.message.includes('401')||e.message.toLowerCase().includes('auth'))appendLine('Invalid API key — tap KEY to reset.','log-err');setStatus('ERROR',false);}btn.disabled=false;inp.focus();}
+document.getElementById('cmd-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendCmd();});
+if(/iPad|iPhone|iPod/.test(navigator.userAgent)){window.addEventListener('focusin',()=>{setTimeout(()=>{document.getElementById('terminal').scrollTop=999999;},350);});}
 </script>
+</body>
+</html>
